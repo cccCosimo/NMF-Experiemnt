@@ -1,8 +1,8 @@
 %BENCHMARK_SEMINMF Small synthetic comparison of full and sketched Semi-NMF.
 % All reported errors are measured in the original space.
 
-m = 200; n = 300; r = 5;
-sketchSizes = [8, 12, 20, 40];
+m = 1000; n = 1500; r = 80;
+sketchSizes = [80, 100, 120, 200, 360];
 maxIter = 100;
 seeds = 1:3;
 noiseLevel = 0.05;
@@ -18,6 +18,8 @@ sketchTime = zeros(numSeeds, numSizes);
 solveTime = zeros(numSeeds, numSizes);
 recoveryTime = zeros(numSeeds, numSizes);
 totalTime = zeros(numSeeds, numSizes);
+fullCurves = zeros(numSeeds, maxIter + 1);
+sketchedCurves = zeros(numSeeds, numSizes, maxIter + 1);
 
 for a = 1:numSeeds
     rng(seeds(a));
@@ -31,8 +33,9 @@ for a = 1:numSeeds
     normX = norm(X, 'fro');
 
     % One full-data baseline for each seed, shared by all sketch sizes.
-    [Ffull, Gfull] = seminmf_hals(X, Ginit, maxIter);
+    [Ffull, Gfull, Histfull] = seminmf_hals(X, Ginit, maxIter);
     fullError(a) = norm(X - Ffull*Gfull.', 'fro') / normX;
+    fullCurves(a,:) = sqrt(2 * Histfull(:).' / normX^2);
     fullTime(a) = timeit(@() seminmf_hals(X, Ginit, maxIter));
 
     for b = 1:numSizes
@@ -41,12 +44,15 @@ for a = 1:numSeeds
         sketch = sketch_stage(X, Omega);
         Q = sketch.Q;
         B = sketch.B;
-        [Fs, Gs] = seminmf_hals(B, Ginit, maxIter);
+        [Fs, Gs, Hists] = seminmf_hals(B, Ginit, maxIter);
         Frecovered = recover_stage(Q, Fs);
 
         projectionError(a,b) = norm(X - Q*B, 'fro') / normX;
         smallError(a,b) = norm(B - Fs*Gs.', 'fro') / normX;
         sketchedError(a,b) = norm(X - Frecovered*Gs.', 'fro') / normX;
+        curve = sqrt(projectionError(a,b)^2 + ...
+            2 * Hists(:).' / normX^2);
+        sketchedCurves(a,b,:) = reshape(curve, 1, 1, []);
 
         % This identity checks that projection, compressed fit and recovery
         % were measured consistently; it does not certify solver convergence.
@@ -84,7 +90,8 @@ results = table(sketchSizes(:), median(projectionError,1).', ...
 disp(results);
 
 plot_seminmf_benchmark(sketchSizes, fullError, fullTime, ...
-    projectionError, smallError, sketchedError, totalTime);
+    fullCurves, sketchedCurves, projectionError, smallError, ...
+    sketchedError, totalTime);
 
 function sketch = sketch_stage(X, Omega)
     Y = X * Omega;

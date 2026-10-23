@@ -1,5 +1,6 @@
 function figs = plot_seminmf_benchmark(sketchSizes, fullError, fullTime, ...
-    projectionError, smallError, sketchedError, totalTime)
+    fullCurves, sketchedCurves, projectionError, smallError, ...
+    sketchedError, totalTime)
 %PLOT_SEMINMF_BENCHMARK Visualize the paired synthetic Semi-NMF benchmark.
 % Rows of the input matrices correspond to seeds; columns correspond to t.
 % All errors are normalized by the Frobenius norm of the original data.
@@ -7,7 +8,10 @@ function figs = plot_seminmf_benchmark(sketchSizes, fullError, fullTime, ...
     t = sketchSizes(:).';
     numSizes = numel(t);
     numSeeds = numel(fullError);
+    numSteps = size(fullCurves, 2);
     assert(numel(fullTime) == numSeeds && ...
+        size(fullCurves, 1) == numSeeds && ...
+        isequal(size(sketchedCurves), [numSeeds, numSizes, numSteps]) && ...
         isequal(size(projectionError), [numSeeds, numSizes]) && ...
         isequal(size(smallError), [numSeeds, numSizes]) && ...
         isequal(size(sketchedError), [numSeeds, numSizes]) && ...
@@ -15,9 +19,9 @@ function figs = plot_seminmf_benchmark(sketchSizes, fullError, fullTime, ...
         'Benchmark arrays must have one row per seed and one column per t.');
 
     colors = lines(numSizes);
-    figs = gobjects(2, 1);
+    figs = gobjects(3, 1);
 
-    % Direct comparison in the original space: lower and further left is better.
+    % Direct comparison in the original space.
     figs(1) = figure('Name', 'Semi-NMF: error versus total time');
     hold on;
     hFull = scatter(fullTime(:), fullError(:), 55, 'k', 'd', 'filled');
@@ -34,8 +38,27 @@ function figs = plot_seminmf_benchmark(sketchSizes, fullError, fullTime, ...
     legend([hFull, hSketch], labels, 'Location', 'best');
     grid on;
     hold off;
+    % The first history value is the initialized factorization; index k+1
+    % corresponds to k completed HALS sweeps.
+    figs(2) = figure('Name', 'Semi-NMF: error versus iteration');
+    hold on;
+    iterationIndex = 1:numSteps;
+    hFullCurve = loglog(iterationIndex, median(fullCurves, 1), ...
+        'k-', 'LineWidth', 1.8);
+    hSketchCurves = gobjects(1, numSizes);
+    for b = 1:numSizes
+        curvesForT = reshape(sketchedCurves(:,b,:), numSeeds, numSteps);
+        hSketchCurves(b) = loglog(iterationIndex, ...
+            median(curvesForT, 1), 'Color', colors(b,:), 'LineWidth', 1.4);
+    end
+    xlabel('Iteration index (1 = initialization)');
+    ylabel('Original-space relative error');
+    title('Median across random seeds');
+    legend([hFullCurve, hSketchCurves], labels, 'Location', 'best');
+    grid on;
+    hold off;
 
-    figs(2) = figure('Name', 'Semi-NMF: effect of sketch size');
+    figs(3) = figure('Name', 'Semi-NMF: effect of sketch size');
 
     subplot(1, 3, 1);
     hold on;
