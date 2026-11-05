@@ -19,28 +19,13 @@ function figs = plot_seminmf_benchmark(sketchSizes, fullError, fullTime, ...
         'Benchmark arrays must have one row per seed and one column per t.');
 
     colors = lines(numSizes);
-    figs = gobjects(3, 1);
+    figs = gobjects(2, 1);
 
-    % Direct comparison in the original space.
-    figs(1) = figure('Name', 'Semi-NMF: error versus total time');
-    hold on;
-    hFull = scatter(fullTime(:), fullError(:), 55, 'k', 'd', 'filled');
-    hSketch = gobjects(1, numSizes);
-    for b = 1:numSizes
-        hSketch(b) = scatter(totalTime(:,b), sketchedError(:,b), ...
-            45, repmat(colors(b,:), numSeeds, 1), 'o', 'filled');
-    end
-    xlabel('Total time (s)');
-    ylabel('Original-space relative error');
-    title('Each marker represents one random seed');
     labels = [{'Full data'}, arrayfun(@(x) sprintf('t = %d', x), ...
         t, 'UniformOutput', false)];
-    legend([hFull, hSketch], labels, 'Location', 'best');
-    grid on;
-    hold off;
     % The first history value is the initialized factorization; index k+1
     % corresponds to k completed HALS sweeps.
-    figs(2) = figure('Name', 'Semi-NMF: error versus iteration');
+    figs(1) = figure('Name', 'Semi-NMF: error versus iteration');
     hold on;
     iterationIndex = 1:numSteps;
     hFullCurve = loglog(iterationIndex, median(fullCurves, 1), ...
@@ -51,6 +36,7 @@ function figs = plot_seminmf_benchmark(sketchSizes, fullError, fullTime, ...
         hSketchCurves(b) = loglog(iterationIndex, ...
             median(curvesForT, 1), 'Color', colors(b,:), 'LineWidth', 1.4);
     end
+    set(gca, 'XScale', 'log', 'YScale', 'log');
     xlabel('Iteration index (1 = initialization)');
     ylabel('Original-space relative error');
     title('Median across random seeds');
@@ -58,7 +44,7 @@ function figs = plot_seminmf_benchmark(sketchSizes, fullError, fullTime, ...
     grid on;
     hold off;
 
-    figs(3) = figure('Name', 'Semi-NMF: effect of sketch size');
+    figs(2) = figure('Name', 'Semi-NMF: effect of sketch size');
 
     subplot(1, 3, 1);
     hold on;
@@ -106,4 +92,5 @@ function figs = plot_seminmf_benchmark(sketchSizes, fullError, fullTime, ...
         'Location', 'best');
     grid on;
     hold off;
+
 end

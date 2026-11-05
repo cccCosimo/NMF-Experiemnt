@@ -1,8 +1,8 @@
 %BENCHMARK_SEMINMF Small synthetic comparison of full and sketched Semi-NMF.
 % All reported errors are measured in the original space.
 
-m = 1000; n = 1500; r = 80;
-sketchSizes = [80, 100, 120, 200, 360];
+m = 12600; n = 300; r = 40;
+sketchSizes = [50, 60, 80, 120];
 maxIter = 100;
 seeds = 1:3;
 noiseLevel = 0.05;
