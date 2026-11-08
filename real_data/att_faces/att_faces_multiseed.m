@@ -1,6 +1,7 @@
-% ATT_FACES_MULTISEED Repeated ORL face-clustering comparison.
-% Each image is a column of X. Labels are used only for evaluation.
-
+% ATT_FACES_MULTISEED Repeat ORL face-clustering comparison.
+% we want this each repeat experiment's result to be out 
+% our final outcome, so we save the results in a mat. document, 
+% instead of only printing it in the command window.
 scriptDir = fileparts(mfilename('fullpath'));
 dataRoot = fullfile(scriptDir, 'att_faces_data');
 addpath(scriptDir);
@@ -29,12 +30,17 @@ end
 assert(isequal(size(X), [height * width, n]));
 assert(all(isfinite(X(:))) && all(X(:) >= 0 & X(:) <= 1));
 
-r = 40;
-t = 240;
-maxIter = 150;
-seeds = 1:10;
+fprintf('X: %d × %d\n', size(X, 1), size(X, 2));
+fprintf('feature range: [%.4f, %.4f]\n', min(X(:)), max(X(:)));
+fprintf('classes: %d\n', numel(unique(labels)));
+
+% set up computation parameters
+r = 40;    % matrix X's rank, also the actuall clusters number
+t = 50;    % skecth size
+maxIter = 150;  % iterations number
+seeds = 1:10;   % random seeds number, we repeat the experiment 10 times
 numRuns = numel(seeds);
-normX = norm(X, 'fro');
+normX = norm(X, 'fro');     % frobenious norm of X
 
 fullError = zeros(numRuns, 1);
 sketchError = zeros(numRuns, 1);

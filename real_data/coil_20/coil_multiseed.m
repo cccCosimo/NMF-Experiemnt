@@ -37,9 +37,13 @@ assert(all(isfinite(X(:)))); % check matrix value
 assert(all(X(:) >= 0 & X(:) <= 1)); % check gray level scale
 assert(numel(unique(labels)) == 20); % check label number
 
+fprintf('X: %d × %d\n', size(X, 1), size(X, 2));
+fprintf('feature range: [%.4f, %.4f]\n', min(X(:)), max(X(:)));
+fprintf('classes: %d\n', numel(unique(labels)));
+
 % set up computation parameters
 r = 20;     % matrix X's rank, also the actuall clusters number
-t = 240;    % skecth size
+t = 30;    % skecth size
 maxIter = 150;  % iterations number
 seeds = 1:10;   % random seeds number, we repeat the experiment 10 times
 numRuns = numel(seeds);

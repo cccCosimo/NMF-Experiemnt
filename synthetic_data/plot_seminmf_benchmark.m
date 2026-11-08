@@ -30,11 +30,14 @@ function figs = plot_seminmf_benchmark(sketchSizes, fullError, fullTime, ...
     iterationIndex = 1:numSteps;
     hFullCurve = loglog(iterationIndex, median(fullCurves, 1), ...
         'k-', 'LineWidth', 1.8);
+    sketchStyles = {'--', ':', '-.', '-'};
     hSketchCurves = gobjects(1, numSizes);
     for b = 1:numSizes
         curvesForT = reshape(sketchedCurves(:,b,:), numSeeds, numSteps);
         hSketchCurves(b) = loglog(iterationIndex, ...
-            median(curvesForT, 1), 'Color', colors(b,:), 'LineWidth', 1.4);
+            median(curvesForT, 1), 'LineStyle', ...
+            sketchStyles{mod(b-1, numel(sketchStyles))+1}, ...
+            'Color', colors(b,:), 'LineWidth', 1.6);
     end
     set(gca, 'XScale', 'log', 'YScale', 'log');
     xlabel('Iteration index (1 = initialization)');
@@ -48,32 +51,26 @@ function figs = plot_seminmf_benchmark(sketchSizes, fullError, fullTime, ...
 
     subplot(1, 3, 1);
     hold on;
-    for a = 1:numSeeds
-        plot(t, sketchedError(a,:), '.', 'Color', [0.7 0.7 0.7], ...
-            'MarkerSize', 12);
-    end
-    plot(t, median(sketchedError, 1), 'o-', 'LineWidth', 1.5);
-    plot([min(t), max(t)], median(fullError)*[1 1], 'k--');
+    hCompressed = plot(t, median(sketchedError, 1), 'o-', ...
+        'Color', [0.5 0 0.6], 'LineWidth', 1.5);
+    hFull = plot([min(t), max(t)], median(fullError)*[1 1], 'k--');
     xlabel('Sketch size t');
     ylabel('Original-space relative error');
     title('Accuracy');
-    legend('Individual seeds', 'Sketch median', 'Full-data median', ...
+    legend([hCompressed, hFull], {'Compressed data', 'Full data'}, ...
         'Location', 'best');
     grid on;
     hold off;
 
     subplot(1, 3, 2);
     hold on;
-    for a = 1:numSeeds
-        plot(t, totalTime(a,:), '.', 'Color', [0.7 0.7 0.7], ...
-            'MarkerSize', 12);
-    end
-    plot(t, median(totalTime, 1), 'o-', 'LineWidth', 1.5);
-    plot([min(t), max(t)], median(fullTime)*[1 1], 'k--');
+    hCompressed = plot(t, median(totalTime, 1), 'o-', ...
+        'Color', [0.5 0 0.6], 'LineWidth', 1.5);
+    hFull = plot([min(t), max(t)], median(fullTime)*[1 1], 'k--');
     xlabel('Sketch size t');
     ylabel('Total time (s)');
     title('Cost');
-    legend('Individual seeds', 'Sketch median', 'Full-data median', ...
+    legend([hCompressed, hFull], {'Compressed data', 'Full data'}, ...
         'Location', 'best');
     grid on;
     hold off;

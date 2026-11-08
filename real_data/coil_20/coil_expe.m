@@ -35,9 +35,9 @@ for item = 1:nItem
     end
 end
 % assert if somethiing went wrong
-assert(isqual(size(X), [height * width, nItem*nPerItem])); % check matrix size
+assert(isequal(size(X), [height * width, nItem*nPerItem])); % check matrix size
 assert(all(isfinite(X(:)))); % check matrix value
-assert(all(X(:) >= 0 & x(:) <= 1)); % check gray level scale
+assert(all(X(:) >= 0 & X(:) <= 1)); % check gray level scale
 assert(numel(unique(labels)) == 20); % check label number
 fprintf('X: %d * %d\n', size(X, 1), size(X,2));
 fprintf('pixel gray level scale: [%.3f, %.3f]\n', min(X(:)), max(X(:)));
@@ -135,7 +135,7 @@ for row = 1:6
     end
 end
 
-t = 240; % sketch size
+t = 30; % sketch size
 
 % Use the same initial G as above and a fixed sketch seed.
 rng(11);
